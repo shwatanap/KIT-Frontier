@@ -20,6 +20,9 @@ clean:
 fclean: clean
 	$(RM) $(NAME)
 
+oclean:
+	$(RM) *.o
+
 re: fclean exec
 
 dot: $(NAME)
