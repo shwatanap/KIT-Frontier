@@ -1,0 +1,3 @@
+[submodule "TdZdd"]
+	path = TdZdd
+	url = git@github.com:kunisura/TdZdd.git
