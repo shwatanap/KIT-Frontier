@@ -75,6 +75,41 @@ public:
     }
 };
 
+// 入力ファイルの読み込み
+Graph readGraph(int argc, char **argv)
+{
+    if (argc < 2)
+    {
+        std::cerr << "Please input a graph file" << std::endl;
+        exit(-1);
+    }
+    std::ifstream ifs(argv[1]);
+    if (!ifs)
+    {
+        std::cerr << "Error: cannot open file " << argv[1] << std::endl;
+        exit(FREE);
+    }
+
+    int s, t;
+    if (ifs)
+        ifs >> s >> t;
+
+    std::vector<std::pair<int, int>> edge_list;
+    int u, v;
+    int n = 0;
+    while (ifs >> u >> v)
+    {
+        edge_list.push_back(std::make_pair(u, v));
+        if (n < u)
+            n = u;
+        if (n < v)
+            n = v;
+    }
+    Graph G(s, t, n, edge_list.size(), edge_list);
+
+    return G;
+}
+
 // TdZdd で表現すべき部分
 class PathZDD : public tdzdd::PodArrayDdSpec<PathZDD, int, 2>
 {
@@ -244,61 +279,29 @@ public:
     }
 };
 
-// 入力ファイルの読み込み
-Graph readGraph(int argc, char **argv)
+void solutionOutput(tdzdd::DdStructure<2> dd, Graph G)
 {
-    if (argc < 2)
+    for (auto &path_set : dd)
     {
-        std::cerr << "Please input a graph file" << std::endl;
-        exit(-1);
+        for (int i = 0; i < G.numEdges(); ++i)
+        {
+            int level = G.numEdges() - i;
+            if (path_set.count(level) == 1)
+                std::cout << G.getEdge(i).first << " " << G.getEdge(i).second << std::endl;
+        }
+        std::cout << std::endl;
     }
-    std::ifstream ifs(argv[1]);
-    if (!ifs)
-    {
-        std::cerr << "Error: cannot open file " << argv[1] << std::endl;
-        exit(FREE);
-    }
-
-    int s, t;
-    if (ifs)
-        ifs >> s >> t;
-
-    std::vector<std::pair<int, int>> edge_list;
-    int u, v;
-    int n = 0;
-    while (ifs >> u >> v)
-    {
-        edge_list.push_back(std::make_pair(u, v));
-        if (n < u)
-            n = u;
-        if (n < v)
-            n = v;
-    }
-    Graph G(s, t, n, edge_list.size(), edge_list);
-
-    return G;
 }
 
 int main(int argc, char **argv)
 {
     Graph G = readGraph(argc, argv);
-    // G.print();
+    G.print();
     PathZDD path(G);
     tdzdd::DdStructure<2> dd(path);
 
     // 解の出力
-    // for (auto &path_set : dd)
-    // {
-    //   for (int i = 0; i < G.numEdges(); ++i)
-    //   {
-    //     // std::cout << path_set.count(i);
-    //     int level = G.numEdges() - i;
-    //     // printf("level: %d\n", level);
-    //     if (path_set.count(level) == 1)
-    //       std::cout << G.getEdge(i).first << " " << G.getEdge(i).second << std::endl;
-    //   }
-    //   std::cout << std::endl;
-    // }
+    solutionOutput(dd, G);
 
     // 解の数の出力
     std::cout << "解の数: " << dd.zddCardinality() << std::endl;
