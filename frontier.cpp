@@ -152,25 +152,6 @@ public:
         return (true);
     }
 
-    // tにつながっている点が最後に出現した時に
-    // bool isT(int *mate, int current_path) const
-    // {
-    //   std::pair<int, int> side_ends = G.getEdge(current_path);
-    //   int min_t_vertice;
-    //   for (int i = 0; i < G.numEdges(); i++)
-    //   {
-    //     if (G.getEdge(i).second == G.getTerminal())
-    //     {
-    //       min_t_vertice = i;
-    //       break;
-    //     }
-    //   }
-    //   // printf("isT: %d, %d\n", min_t_vertice, current_path < min_t_vertice);
-    //   if (current_path < min_t_vertice)
-    //     return (false);
-    //   return (true);
-    // }
-
     // 枝刈りを判定を行う関数
     bool isPruning(int *mate, int current_path) const
     {
