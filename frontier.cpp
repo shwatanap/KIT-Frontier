@@ -165,8 +165,6 @@ public:
         if (mate[s] == FREE || mate[t] == FREE)
             return (true);
         // 2. sが孤立かつsに新しい辺が作られる可能性がない場合
-        // if (mate[t] == t && !isT(mate, current_path))
-        //   return (true);
         if (mate[s] == s && u != s)
             return (true);
         // 3. sとt以外の頂点が端点となってフロンティアから抜ける
@@ -176,40 +174,49 @@ public:
         // 5. 平路が生じる
         if (mate[u] == v && mate[v] == u)
             return (true);
+        return (false);
+    }
 
-        // e_frontier_type frontier[v_num];
+    bool isFrontierPruning(int *mate, int current_path) const
+    {
+        int v_num = G.numVertices();
+        int e_num = G.numEdges();
+        e_frontier_type frontier[v_num];
 
-        // // frontierの初期化
-        // for (int i = 0; i < v_num; i++)
-        //     frontier[i] = NOT;
-        // for (int i = e_num - current_path + 1; i <= e_num; i++)
-        // {
-        //     std::pair<int, int> side_ends = G.getEdge(i);
-        //     if (i == e_num - current_path + 1)
-        //     {
-        //         frontier[side_ends.first] = CURRENT;
-        //         frontier[side_ends.second] = CURRENT;
-        //     }
-        //     else
-        //     {
-        //         frontier[side_ends.first] = NEXT;
-        //         frontier[side_ends.second] = NEXT;
-        //     }
-        // }
+        // frontierの初期化
+        for (int i = 0; i < v_num; i++)
+            frontier[i] = NOT;
+        for (int i = current_path; i <= e_num; i++)
+        {
+            std::pair<int, int> side_ends = G.getEdge(i);
+            if (i == current_path)
+            {
+                frontier[side_ends.first] = CURRENT;
+                frontier[side_ends.second] = CURRENT;
+            }
+            else
+            {
+                frontier[side_ends.first] = NEXT;
+                frontier[side_ends.second] = NEXT;
+            }
+        }
 
-        // for (int i = 2; i < v_num; i++)
-        // {
-        //     if (frontier[i] == CURRENT)
-        //     {
-        //         if (i == u)
-        //             if (mate[u] != u && mate[u] != FREE)
-        //                 return (true);
-        //         if (i == v)
-        //             if (mate[v] != v && mate[v] != FREE)
-        //                 return (true);
-        //         mate[i] = FREE;
-        //     }
-        // }
+        std::pair<int, int> side_ends = G.getEdge(current_path);
+        int u = side_ends.first;
+        int v = side_ends.second;
+        for (int i = 2; i < v_num; i++)
+        {
+            if (frontier[i] == CURRENT)
+            {
+                if (i == u)
+                    if (mate[u] != u && mate[u] != FREE)
+                        return (true);
+                if (i == v)
+                    if (mate[v] != v && mate[v] != FREE)
+                        return (true);
+                mate[i] = FREE;
+            }
+        }
         return (false);
     }
 
@@ -227,43 +234,8 @@ public:
             // mateの更新
             updateMate(mate, current_path);
         }
-
-        // e_frontier_type frontier[v_num];
-
-        // // frontierの初期化
-        // for (int i = 0; i < v_num; i++)
-        //     frontier[i] = NOT;
-        // for (int i = e_num - level; i <= e_num; i++)
-        // {
-        //     std::pair<int, int> side_ends = G.getEdge(i);
-        //     if (i == e_num - level)
-        //     {
-        //         frontier[side_ends.first] = CURRENT;
-        //         frontier[side_ends.second] = CURRENT;
-        //     }
-        //     else
-        //     {
-        //         frontier[side_ends.first] = NEXT;
-        //         frontier[side_ends.second] = NEXT;
-        //     }
-        // }
-
-        // std::pair<int, int> side_ends = G.getEdge(current_path);
-        // int u = side_ends.first;
-        // int v = side_ends.second;
-        // for (int i = 2; i < v_num; i++)
-        // {
-        //     if (frontier[i] == CURRENT)
-        //     {
-        //         if (i == u)
-        //             if (mate[u] != u && mate[u] != FREE)
-        //                 return (0);
-        //         if (i == v)
-        //             if (mate[v] != v && mate[v] != FREE)
-        //                 return (0);
-        //         mate[i] = FREE;
-        //     }
-        // }
+        if (isFrontierPruning(mate, current_path))
+            return (0);
         // 解が完成ならFREEを返す
         if (isCorrect(mate))
             return (-1);
