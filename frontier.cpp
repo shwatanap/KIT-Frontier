@@ -252,6 +252,18 @@ public:
                 mate[i] = FREE;
             }
         }
+        // これ入れると7以上で解が0になる
+        // int s = G.getStart();
+        // int t = G.getTerminal();
+        // int count = 0;
+        // // flonter does not have point of side
+        // for (int i = 0; i < v_num; i++)
+        //     if (frontier[i] == NEXT)
+        //         if (mate[i] != i && mate[i] > 0)
+        //             count++;
+        // // tが孤立
+        // if (count == 0 && mate[s] != s)
+        //     return (true);
         return (false);
     }
 
@@ -271,7 +283,7 @@ public:
         }
         if (isFrontierPruning(mate, current_path))
             return (0);
-        // 解が完成ならFREEを返す
+        // 解が完成なら-1を返す
         if (isCorrect(mate))
             return (-1);
         // 何も起こらない場合 level - 1を返す
@@ -296,12 +308,12 @@ void solutionOutput(tdzdd::DdStructure<2> dd, Graph G)
 int main(int argc, char **argv)
 {
     Graph G = readGraph(argc, argv);
-    G.print();
+    // G.print();
     PathZDD path(G);
     tdzdd::DdStructure<2> dd(path);
 
     // 解の出力
-    solutionOutput(dd, G);
+    // solutionOutput(dd, G);
 
     // 解の数の出力
     std::cout << "解の数: " << dd.zddCardinality() << std::endl;
