@@ -3,5 +3,6 @@
 *.png
 .vscode
 path
+hamilton
 frontier1.cpp
 frontier2.cpp

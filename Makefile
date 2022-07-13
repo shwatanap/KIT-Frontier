@@ -1,6 +1,9 @@
 SRCS		= frontier.cpp
 OBJS		= $(SRCS:.cpp=.o)
 NAME		= path
+HSRCS		= hamilton.cpp
+HOBJS		= $(HSRCS:.cpp=.o)
+HNAME		= hamilton
 INCDIR		= TdZdd/include
 NUM			= 2
 RM			= rm -rf
@@ -10,6 +13,12 @@ exec: $(NAME)
 
 $(NAME): $(OBJS)
 	g++ -o $(NAME) $^
+
+exech: $(HNAME)
+	./$(HNAME) grid/grid$(NUM)x$(NUM).grh
+
+$(HNAME): $(HOBJS)
+	g++ -o $(HNAME) $^
 
 %.o: %.cpp
 	g++ -I $(INCDIR) -c $< -o $@
