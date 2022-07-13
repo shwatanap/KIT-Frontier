@@ -10,22 +10,23 @@ HOBJS		= $(addprefix $(ODIR)/, $(SRCS:.cpp=.o))
 HNAME		= $(BDIR)/hamilton
 INCDIR		= TdZdd/include
 NUM			= 2
+CPP			= g++
 RM			= rm -rf
 
 exec: $(NAME)
 	./$(NAME) grid/grid$(NUM)x$(NUM).grh
 
 $(NAME): $(BDIR) $(ODIR) $(OBJS)
-	g++ -o $(NAME) $(OBJS)
+	$(CPP) -o $(NAME) $(OBJS)
 
 exech: $(ODIR) $(HNAME)
 	./$(HNAME) grid/grid$(NUM)x$(NUM).grh
 
 $(HNAME): $(BDIR) $(ODIR) $(HOBJS)
-	g++ -o $(HNAME) $^
+	$(CPP) -o $(HNAME) $^
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
-	g++ -I $(INCDIR) -c $< -o $@
+	$(CPP) -I $(INCDIR) -c $< -o $@
 
 $(BDIR):
 	mkdir -p $@
@@ -41,9 +42,6 @@ clean:
 
 fclean: clean
 	$(RM) $(BDIR)
-
-oclean:
-	$(RM) *.o
 
 re: fclean exec
 
