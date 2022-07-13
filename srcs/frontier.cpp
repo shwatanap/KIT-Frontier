@@ -316,8 +316,8 @@ int main(int argc, char **argv)
     // solutionOutput(dd, G);
 
     // 解の数の出力
-    std::cout << "解の数: " << dd.zddCardinality() << std::endl;
+    // std::cout << "解の数: " << dd.zddCardinality() << std::endl;
 
     // グラフ出力
-    // dd.dumpDot();
+    dd.dumpDot();
 }

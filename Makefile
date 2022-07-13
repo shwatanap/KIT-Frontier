@@ -1,9 +1,13 @@
+ODIR		= objs
+SDIR		= srcs
+BDIR		= bin
+DDIR		= dots
 SRCS		= frontier.cpp
-OBJS		= $(SRCS:.cpp=.o)
-NAME		= path
+OBJS		= $(addprefix $(ODIR)/, $(SRCS:.cpp=.o))
+NAME		= $(BDIR)/path
 HSRCS		= hamilton.cpp
-HOBJS		= $(HSRCS:.cpp=.o)
-HNAME		= hamilton
+HOBJS		= $(addprefix $(ODIR)/, $(SRCS:.cpp=.o))
+HNAME		= $(BDIR)/hamilton
 INCDIR		= TdZdd/include
 NUM			= 2
 RM			= rm -rf
@@ -11,31 +15,40 @@ RM			= rm -rf
 exec: $(NAME)
 	./$(NAME) grid/grid$(NUM)x$(NUM).grh
 
-$(NAME): $(OBJS)
-	g++ -o $(NAME) $^
+$(NAME): $(BDIR) $(ODIR) $(OBJS)
+	g++ -o $(NAME) $(OBJS)
 
-exech: $(HNAME)
+exech: $(ODIR) $(HNAME)
 	./$(HNAME) grid/grid$(NUM)x$(NUM).grh
 
-$(HNAME): $(HOBJS)
+$(HNAME): $(BDIR) $(ODIR) $(HOBJS)
 	g++ -o $(HNAME) $^
 
-%.o: %.cpp
+$(ODIR)/%.o: $(SDIR)/%.cpp
 	g++ -I $(INCDIR) -c $< -o $@
 
+$(BDIR):
+	mkdir -p $@
+
+$(ODIR):
+	mkdir -p $@
+
+$(DDIR):
+	mkdir -p $@
+
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(ODIR)
 
 fclean: clean
-	$(RM) $(NAME)
+	$(RM) $(BDIR)
 
 oclean:
 	$(RM) *.o
 
 re: fclean exec
 
-dot: $(NAME)
-	./$(NAME) grid/grid$(NUM)x$(NUM).grh > output.dot
-	dot -Tpng output.dot -o output.png
+dot: $(DDIR) $(NAME)
+	./$(NAME) grid/grid$(NUM)x$(NUM).grh > $(DDIR)/output.dot
+	dot -Tpng $(DDIR)/output.dot -o $(DDIR)/output.png
 
-.PHONY: clean fclean
+.PHONY: clean fclean dot

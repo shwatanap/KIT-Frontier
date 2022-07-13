@@ -2,7 +2,8 @@
 *.dot
 *.png
 .vscode
-path
-hamilton
+bin
+dots
+objs
 frontier1.cpp
 frontier2.cpp
