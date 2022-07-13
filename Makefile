@@ -1,4 +1,4 @@
-SRCS		= frontier2.cpp
+SRCS		= frontier.cpp
 OBJS		= $(SRCS:.cpp=.o)
 NAME		= path
 INCDIR		= TdZdd/include
