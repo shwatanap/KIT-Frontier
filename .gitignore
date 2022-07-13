@@ -1,6 +1,7 @@
 *.o
 *.dot
 *.png
+.vscode
 path
 frontier1.cpp
 frontier2.cpp
