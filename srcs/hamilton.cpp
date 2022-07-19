@@ -5,7 +5,6 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <regex>
 
 #define FREE -1
 
@@ -188,6 +187,28 @@ public:
 		return (true);
 	}
 
+	bool isCorrectHamilton(int *mate) const
+	{
+		int t = G.getTerminal();
+		int v_num = G.numVertices();
+
+		// printMate(mate);
+		if (mate[t - 1] == t && mate[t] == t - 1)
+		{
+			// printf("-------\n");
+			for (int i = 2; i < v_num - 1; i++)
+			{
+				// printf("%d\n", mate[i]);
+				if (mate[i] != FREE)
+					break;
+				if (i == v_num - 2)
+					return (true);
+			}
+			// printf("=======\n");
+		}
+		return (false);
+	}
+
 	// 枝刈りを判定を行う関数
 	bool isPruning(int *mate, int current_path) const
 	{
@@ -308,9 +329,6 @@ void solutionOutput(tdzdd::DdStructure<2> dd, Graph G)
 
 int main(int argc, char **argv)
 {
-	if (argc != 2)
-		return (1);
-	// gridのnが奇数の場合は解0を返す
 	Graph G = readGraph(argc, argv);
 	// G.print();
 	PathZDD path(G);
