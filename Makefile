@@ -6,7 +6,7 @@ SRCS		= frontier.cpp
 OBJS		= $(addprefix $(ODIR)/, $(SRCS:.cpp=.o))
 NAME		= $(BDIR)/path
 HSRCS		= hamilton.cpp
-HOBJS		= $(addprefix $(ODIR)/, $(SRCS:.cpp=.o))
+HOBJS		= $(addprefix $(ODIR)/, $(HSRCS:.cpp=.o))
 HNAME		= $(BDIR)/hamilton
 INCDIR		= TdZdd/include
 NUM			= 2
@@ -19,11 +19,11 @@ exec: $(NAME)
 $(NAME): $(BDIR) $(ODIR) $(OBJS)
 	$(CPP) -o $(NAME) $(OBJS)
 
-exech: $(ODIR) $(HNAME)
+exech: $(HNAME)
 	./$(HNAME) grid/grid$(NUM)x$(NUM).grh
 
 $(HNAME): $(BDIR) $(ODIR) $(HOBJS)
-	$(CPP) -o $(HNAME) $^
+	$(CPP) -o $(HNAME) $(HOBJS)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	$(CPP) -I $(INCDIR) -c $< -o $@
