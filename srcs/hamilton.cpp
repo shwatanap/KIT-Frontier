@@ -10,7 +10,8 @@
 
 typedef enum e_frontier_type
 {
-	NOT,
+	NOT = -1,
+	MID,
 	CURRENT,
 	NEXT,
 } t_frontier_type;
@@ -155,21 +156,21 @@ public:
 		{
 			mate[v] = w;
 			mate[w] = v;
-			mate[u] = FREE;
+			mate[u] = MID;
 		}
 		else if (mate[u] == u && mate[x] == v && mate[v] == x)
 		{
 			mate[u] = x;
 			mate[x] = u;
-			mate[v] = FREE;
+			mate[v] = MID;
 		}
 		// 3. 2つのパスの融合
 		else if (mate[u] == w && mate[w] == u && mate[v] == x && mate[x] == v)
 		{
 			mate[w] = x;
 			mate[x] = w;
-			mate[u] = FREE;
-			mate[v] = FREE;
+			mate[u] = MID;
+			mate[v] = MID;
 		}
 	}
 
@@ -192,19 +193,15 @@ public:
 		int t = G.getTerminal();
 		int v_num = G.numVertices();
 
-		// printMate(mate);
 		if (mate[t - 1] == t && mate[t] == t - 1)
 		{
-			// printf("-------\n");
-			for (int i = 2; i < v_num - 1; i++)
+			for (int i = 1; i < v_num - 1; i++)
 			{
-				// printf("%d\n", mate[i]);
-				if (mate[i] != FREE)
+				if (mate[i] != MID)
 					break;
 				if (i == v_num - 2)
 					return (true);
 			}
-			// printf("=======\n");
 		}
 		return (false);
 	}
@@ -219,14 +216,14 @@ public:
 		int t = G.getTerminal();
 
 		// 1. sが中点
-		if (mate[s] == FREE || mate[t] == FREE)
-			return (true);
-		// 2. sが孤立かつsに新しい辺が作られる可能性がない場合
+		// if (mate[s] == MID || mate[t] == MID)
+		// 	return (true);
+		// // 2. sが孤立かつsに新しい辺が作られる可能性がない場合
 		if (mate[s] == s && u != s)
 			return (true);
-		// 3. sとt以外の頂点が端点となってフロンティアから抜ける
+		// // 3. sとt以外の頂点が端点となってフロンティアから抜ける
 		// 4. パスの中点に接続
-		if (mate[u] == FREE || mate[v] == FREE)
+		if (mate[u] == MID || mate[v] == MID)
 			return (true);
 		// 5. 平路が生じる
 		if (mate[u] == v && mate[v] == u)
@@ -234,10 +231,14 @@ public:
 		return (false);
 	}
 
-	bool isFrontierPruning(int *mate, int current_path) const
+	bool isFrontierPruning(int *mate, int level, int current_path) const
 	{
 		int v_num = G.numVertices();
 		int e_num = G.numEdges();
+		int s = G.getStart();
+		std::pair<int, int> side_ends = G.getEdge(current_path);
+		int u = side_ends.first;
+		int v = side_ends.second;
 		e_frontier_type frontier[v_num];
 
 		// frontierの初期化
@@ -258,34 +259,37 @@ public:
 			}
 		}
 
-		std::pair<int, int> side_ends = G.getEdge(current_path);
-		int u = side_ends.first;
-		int v = side_ends.second;
 		for (int i = 2; i < v_num; i++)
 		{
 			if (frontier[i] == CURRENT)
 			{
 				if (i == u)
-					if (mate[u] != u && mate[u] != FREE)
+					if (mate[u] != u && mate[u] > 0)
 						return (true);
 				if (i == v)
-					if (mate[v] != v && mate[v] != FREE)
+					if (mate[v] != v && mate[v] > 0)
 						return (true);
-				mate[i] = FREE;
+				if (mate[i] == i)
+					mate[i] = FREE;
 			}
 		}
-		// これ入れると7以上で解が0になる
-		// int s = G.getStart();
-		// int t = G.getTerminal();
-		// int count = 0;
-		// // flonter does not have point of side
-		// for (int i = 0; i < v_num; i++)
-		//     if (frontier[i] == NEXT)
-		//         if (mate[i] != i && mate[i] > 0)
-		//             count++;
-		// // tが孤立
-		// if (count == 0 && mate[s] != s)
-		//     return (true);
+		for (int i = 1; i < current_path; i++)
+			if (mate[i] == FREE)
+				return (true);
+
+		if (level == v_num && mate[s] == s)
+			return (0);
+		if (level == v_num - 1 && mate[s] != MID)
+			return (0);
+
+		int count = 0;
+		for (int i = 0; i < v_num; i++)
+			if (frontier[i] == NEXT)
+				if (mate[i] != i && mate[i] > 0)
+					count++;
+		// tが孤立
+		if (count == 0 && mate[s] != s)
+			return (true);
 		return (false);
 	}
 
@@ -297,16 +301,16 @@ public:
 
 		if (value)
 		{
-			// 枝刈り
 			if (isPruning(mate, current_path))
 				return (0);
+			// 枝刈り
 			// mateの更新
 			updateMate(mate, current_path);
 		}
-		if (isFrontierPruning(mate, current_path))
+		if (isFrontierPruning(mate, level, current_path))
 			return (0);
 		// 解が完成なら-1を返す
-		if (isCorrect(mate))
+		if (isCorrectHamilton(mate))
 			return (-1);
 		// 何も起こらない場合 level - 1を返す
 		return (level - 1);
