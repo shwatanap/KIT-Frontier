@@ -252,18 +252,6 @@ public:
 				mate[i] = FREE;
 			}
 		}
-		// これ入れると7以上で解が0になる
-		// int s = G.getStart();
-		// int t = G.getTerminal();
-		// int count = 0;
-		// // flonter does not have point of side
-		// for (int i = 0; i < v_num; i++)
-		//     if (frontier[i] == NEXT)
-		//         if (mate[i] != i && mate[i] > 0)
-		//             count++;
-		// // tが孤立
-		// if (count == 0 && mate[s] != s)
-		//     return (true);
 		return (false);
 	}
 
@@ -313,11 +301,11 @@ int main(int argc, char **argv)
 	tdzdd::DdStructure<2> dd(path);
 
 	// 解の出力
-	// solutionOutput(dd, G);
+	solutionOutput(dd, G);
 
 	// 解の数の出力
-	// std::cout << "解の数: " << dd.zddCardinality() << std::endl;
+	std::cout << "解の数: " << dd.zddCardinality() << std::endl;
 
 	// グラフ出力
-	dd.dumpDot();
+	// dd.dumpDot();
 }
