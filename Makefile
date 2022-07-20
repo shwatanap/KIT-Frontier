@@ -49,4 +49,8 @@ dot: $(DDIR) $(NAME)
 	./$(NAME) grid/grid$(NUM)x$(NUM).grh > $(DDIR)/output.dot
 	dot -Tpng $(DDIR)/output.dot -o $(DDIR)/output.png
 
+doth: $(DDIR) $(HNAME)
+	./$(HNAME) grid/grid$(NUM)x$(NUM).grh > $(DDIR)/output.dot
+	dot -Tpng $(DDIR)/output.dot -o $(DDIR)/output.png
+
 .PHONY: clean fclean dot
