@@ -150,7 +150,6 @@ public:
 			mate[v] = u;
 		}
 		// 2. 既存のパスの延長
-		// どっちかいらない？？
 		else if (mate[v] == v && mate[w] == u && mate[u] == w)
 		{
 			mate[v] = w;
@@ -183,7 +182,6 @@ public:
 		for (int i = 2; i < G.numVertices(); i++)
 			if (!(mate[i] == FREE || mate[i] == i))
 				return (false);
-		// printMate(mate);
 		return (true);
 	}
 

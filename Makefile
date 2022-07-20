@@ -42,6 +42,7 @@ clean:
 
 fclean: clean
 	$(RM) $(BDIR)
+	$(RM) $(DDIR)
 
 re: fclean exec
 
