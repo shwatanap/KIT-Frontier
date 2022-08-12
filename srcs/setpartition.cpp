@@ -136,38 +136,32 @@ public:
 	}
 
 	// 枝刈り
-	bool isPruning(int *state, int level) const
+	bool isDuplicate(int *state, int level) const
 	{
-		int e = F.numElements();
+		int n = F.numElements();
 
 		// 要素の重なり
-		// for (int i = 1; i <= e; i++)
-		// 	if (state[i] > 1)
-		// 		return (true);
+		for (int i = 1; i <= n; i++)
+			if (1 < state[i])
+				return (true);
 		return (false);
 	}
 
 	// state配列の更新
-	bool updateState(int *state, int level) const
+	void updateState(int *state, int level) const
 	{
 		std::vector<int> sl = F.getSet(level + 1);
 
 		for (int elem : sl)
-		{
-			if (state[elem] == 0)
-				state[elem] = 1;
-			else
-				return (false);
-		}
-		return (true);
+			state[elem] += 1;
 	}
 
 	// 解の判定
 	bool isCorrect(int *state) const
 	{
-		int e = F.numElements();
+		int n = F.numElements();
 
-		for (int i = 1; i <= e; i++)
+		for (int i = 1; i <= n; i++)
 			if (state[i] != 1)
 				return (false);
 		return (true);
@@ -175,16 +169,15 @@ public:
 
 	int getChild(int *state, int level, int value) const
 	{
-		// int e = F.numElements();
-		int s = F.numSets();
+		// int n = F.numElements();
+		int m = F.numSets();
 
-		int current_level = s - level;
+		int current_level = m - level;
 
 		if (value)
 		{
-			if (isPruning(state, level))
-				return (0);
-			if (!updateState(state, current_level))
+			updateState(state, current_level);
+			if (isDuplicate(state, level))
 				return (0);
 		}
 
@@ -239,11 +232,11 @@ int main(int argc, char **argv)
 	FamilyofSets F = readSets(argc, argv);
 	SetZDD sets(F);
 	tdzdd::DdStructure<2> dd(sets);
-	int s = F.numSets();
-	int e = F.numElements();
-	int c[s];
+	int m = F.numSets();
+	int n = F.numElements();
+	int c[m];
 
-	for (int i = 1; i <= s; i++)
+	for (int i = 1; i <= m; i++)
 		c[i - 1] = F.getWeight(i);
 
 	// F.print();
@@ -260,7 +253,7 @@ int main(int argc, char **argv)
 		std::cout << i << ": ";
 		for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
 		{
-			std::cout << s - *itr + 1 << " ";
+			std::cout << m - *itr + 1 << " ";
 		}
 		i++;
 		std::cout << std::endl;
@@ -268,9 +261,9 @@ int main(int argc, char **argv)
 	std::cout << std::endl;
 
 	// 3: 重みの総和が最小の集合分割の重みの総和を出力
-	std::cout << "重みの総和が最小の集合分割の重みの総和: " << dd.evaluate(MinElement(s, c)) << std::endl;
+	std::cout << "重みの総和が最小の集合分割の重みの総和: " << dd.evaluate(MinElement(m, c)) << std::endl;
 	std::cout << std::endl;
 
 	// 4: 最大重みが最小の集合分割の最大重みの出力
-	std::cout << "最大重みが最小の集合分割の最大重み: " << dd.evaluate(MaxElement(s, c)) << std::endl;
+	std::cout << "最大重みが最小の集合分割の最大重み: " << dd.evaluate(MaxElement(m, c)) << std::endl;
 }
