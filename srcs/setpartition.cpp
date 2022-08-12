@@ -9,6 +9,9 @@
 #include <tdzdd/DdEval.hpp>
 #include <tdzdd/DdSpecOp.hpp>
 
+#define PRUNING 0
+#define SUCCESS -1
+
 // 集合族を表すクラス FamilyofSets
 class FamilyofSets
 {
@@ -135,54 +138,74 @@ public:
 		return (F.numSets());
 	}
 
-	// 枝刈り
-	bool isDuplicate(int *state, int level) const
-	{
-		int n = F.numElements();
-
-		// 要素の重なり
-		for (int i = 1; i <= n; i++)
-			if (1 < state[i])
-				return (true);
-		return (false);
-	}
-
-	// state配列の更新
-	void updateState(int *state, int level) const
+	// state配列の更新と枝刈り
+	bool updateStateWithPruning(int *state, int level) const
 	{
 		std::vector<int> sl = F.getSet(level + 1);
 
 		for (int elem : sl)
-			state[elem] += 1;
+		{
+			if (state[elem] == 0)
+				state[elem] = 1;
+			else
+				return (true);
+		}
+		return (false);
 	}
 
 	// 解の判定
-	bool isCorrect(int *state) const
+	bool isCorrect(int *state, int n) const
 	{
-		int n = F.numElements();
+		int cnt = 0;
 
 		for (int i = 1; i <= n; i++)
-			if (state[i] != 1)
-				return (false);
-		return (true);
+			if (state[i] == 1 || state[i] == -1)
+				cnt++;
+
+		if (cnt == n)
+			return (true);
+		return (false);
 	}
 
 	int getChild(int *state, int level, int value) const
 	{
-		// int n = F.numElements();
+		int n = F.numElements();
 		int m = F.numSets();
+		int frontier[n + 1];
 
 		int current_level = m - level;
 
 		if (value)
 		{
-			updateState(state, current_level);
-			if (isDuplicate(state, level))
-				return (0);
+			if (updateStateWithPruning(state, current_level))
+				return (PRUNING);
 		}
 
-		if (isCorrect(state))
-			return (-1);
+		for (int i = 1; i <= n; i++)
+		{
+			if (state[i] == 1 || state[i] == -1)
+				frontier[i] = 1;
+			else
+				frontier[i] = 0;
+		}
+
+		for (int i = 1; i < level; i++)
+		{
+			for (int elem : F.getSet(current_level + i + 1))
+				if (frontier[elem] == 0)
+					frontier[elem] = 2;
+		}
+
+		for (int i = 1; i <= n; i++)
+		{
+			if (frontier[i] == 0)
+				return 0;
+			else if (frontier[i] == 1)
+				state[i] = -1;
+		}
+
+		if (isCorrect(state, n))
+			return (SUCCESS);
 
 		return (level - 1);
 	}
@@ -245,20 +268,20 @@ int main(int argc, char **argv)
 	std::cout << std::endl;
 
 	// 2: 全ての集合分割を出力
-	int i = 1;
-	std::cout << "解の列挙: " << std::endl;
-	for (auto it = dd.begin(); it != dd.end(); ++it)
-	{
-		/* 実行可能解を１行ずつ出力 */
-		std::cout << i << ": ";
-		for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
-		{
-			std::cout << m - *itr + 1 << " ";
-		}
-		i++;
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
+	// int i = 1;
+	// std::cout << "解の列挙: " << std::endl;
+	// for (auto it = dd.begin(); it != dd.end(); ++it)
+	// {
+	// 	/* 実行可能解を１行ずつ出力 */
+	// 	std::cout << i << ": ";
+	// 	for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
+	// 	{
+	// 		std::cout << m - *itr + 1 << " ";
+	// 	}
+	// 	i++;
+	// 	std::cout << std::endl;
+	// }
+	// std::cout << std::endl;
 
 	// 3: 重みの総和が最小の集合分割の重みの総和を出力
 	std::cout << "重みの総和が最小の集合分割の重みの総和: " << dd.evaluate(MinElement(m, c)) << std::endl;
