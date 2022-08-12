@@ -153,6 +153,38 @@ public:
 		return (false);
 	}
 
+	// フロンティアの更新
+	void updateFrontier(int *state, int *frontier, int current_level, int level, int n) const
+	{
+		for (int i = 1; i <= n; i++)
+		{
+			if (state[i] == 1 || state[i] == -1)
+				frontier[i] = 1;
+			else
+				frontier[i] = 0;
+		}
+
+		for (int i = 1; i < level; i++)
+		{
+			for (int elem : F.getSet(current_level + i + 1))
+				if (frontier[elem] == 0)
+					frontier[elem] = 2;
+		}
+	}
+
+	// フロンティアによる枝刈り
+	bool pruningByFrontier(int *state, int *frontier, int n) const
+	{
+		for (int i = 1; i <= n; i++)
+		{
+			if (frontier[i] == 0)
+				return (true);
+			else if (frontier[i] == 1)
+				state[i] = -1;
+		}
+		return (false);
+	}
+
 	// 解の判定
 	bool isCorrect(int *state, int n) const
 	{
@@ -172,37 +204,16 @@ public:
 		int n = F.numElements();
 		int m = F.numSets();
 		int frontier[n + 1];
-
 		int current_level = m - level;
 
 		if (value)
-		{
 			if (updateStateWithPruning(state, current_level))
 				return (PRUNING);
-		}
 
-		for (int i = 1; i <= n; i++)
-		{
-			if (state[i] == 1 || state[i] == -1)
-				frontier[i] = 1;
-			else
-				frontier[i] = 0;
-		}
+		updateFrontier(state, frontier, current_level, level, n);
 
-		for (int i = 1; i < level; i++)
-		{
-			for (int elem : F.getSet(current_level + i + 1))
-				if (frontier[elem] == 0)
-					frontier[elem] = 2;
-		}
-
-		for (int i = 1; i <= n; i++)
-		{
-			if (frontier[i] == 0)
-				return 0;
-			else if (frontier[i] == 1)
-				state[i] = -1;
-		}
+		if (pruningByFrontier(state, frontier, n))
+			return (PRUNING);
 
 		if (isCorrect(state, n))
 			return (SUCCESS);
@@ -250,6 +261,26 @@ public:
 	}
 };
 
+void outputSolutions(tdzdd::DdStructure<2> dd, FamilyofSets F)
+{
+	int m = F.numSets();
+	int i = 1;
+
+	std::cout << "解の列挙: " << std::endl;
+	for (auto it = dd.begin(); it != dd.end(); ++it)
+	{
+		/* 実行可能解を１行ずつ出力 */
+		std::cout << i << ": ";
+		for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
+		{
+			std::cout << m - *itr + 1 << " ";
+		}
+		i++;
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+
 int main(int argc, char **argv)
 {
 	FamilyofSets F = readSets(argc, argv);
@@ -268,20 +299,7 @@ int main(int argc, char **argv)
 	std::cout << std::endl;
 
 	// 2: 全ての集合分割を出力
-	// int i = 1;
-	// std::cout << "解の列挙: " << std::endl;
-	// for (auto it = dd.begin(); it != dd.end(); ++it)
-	// {
-	// 	/* 実行可能解を１行ずつ出力 */
-	// 	std::cout << i << ": ";
-	// 	for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
-	// 	{
-	// 		std::cout << m - *itr + 1 << " ";
-	// 	}
-	// 	i++;
-	// 	std::cout << std::endl;
-	// }
-	// std::cout << std::endl;
+	outputSolutions(dd, F);
 
 	// 3: 重みの総和が最小の集合分割の重みの総和を出力
 	std::cout << "重みの総和が最小の集合分割の重みの総和: " << dd.evaluate(MinElement(m, c)) << std::endl;
