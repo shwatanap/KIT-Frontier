@@ -272,9 +272,7 @@ void outputSolutions(tdzdd::DdStructure<2> dd, FamilyofSets F)
 		/* 実行可能解を１行ずつ出力 */
 		std::cout << i << ": ";
 		for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
-		{
 			std::cout << m - *itr + 1 << " ";
-		}
 		i++;
 		std::cout << std::endl;
 	}
