@@ -9,8 +9,6 @@
 #include <tdzdd/DdEval.hpp>
 #include <tdzdd/DdSpecOp.hpp>
 
-int cnt = 0;
-
 // 集合族を表すクラス FamilyofSets
 class FamilyofSets
 {
@@ -143,19 +141,25 @@ public:
 		int e = F.numElements();
 
 		// 要素の重なり
-		for (int i = 1; i <= e; i++)
-			if (state[i] > 1)
-				return (true);
+		// for (int i = 1; i <= e; i++)
+		// 	if (state[i] > 1)
+		// 		return (true);
 		return (false);
 	}
 
 	// state配列の更新
-	void updateState(int *state, int level) const
+	bool updateState(int *state, int level) const
 	{
 		std::vector<int> sl = F.getSet(level + 1);
 
 		for (int elem : sl)
-			state[elem] += 1;
+		{
+			if (state[elem] == 0)
+				state[elem] = 1;
+			else
+				return (false);
+		}
+		return (true);
 	}
 
 	// 解の判定
@@ -180,13 +184,33 @@ public:
 		{
 			if (isPruning(state, level))
 				return (0);
-			updateState(state, current_level);
+			if (!updateState(state, current_level))
+				return (0);
 		}
 
 		if (isCorrect(state))
 			return (-1);
 
 		return (level - 1);
+	}
+};
+
+class MinElement : public tdzdd::DdEval<MinElement, int>
+{
+	int const n;
+	int const *c;
+
+public:
+	MinElement(int n, int *c) : n(n), c(c) {}
+
+	void evalTerminal(int &val, bool one) const
+	{
+		val = one ? 0 : INT_MAX / 2;
+	}
+
+	void evalNode(int &val, int level, tdzdd::DdValues<int, 2> const &values) const
+	{
+		val = std::min(values.get(0), values.get(1) + c[n - level]);
 	}
 };
 
@@ -198,16 +222,15 @@ class MaxElement : public tdzdd::DdEval<MaxElement, int>
 public:
 	MaxElement(int n, int *c) : n(n), c(c) {}
 
-	void evalTerminal(int &val, bool one) const
+	void evalTerminal(int &val, bool one)
 	{
-		val = one ? 0 : INT_MAX;
+		val = one ? 0 : INT_MAX / 2;
 	}
 
 	void evalNode(int &val, int level, tdzdd::DdValues<int, 2> const &values) const
 	{
-		std::cout << values.get(0) << ":" << values.get(1) << ":" << c[n - level] << std::endl;
-		val = std::max(values.get(0), values.get(1) + c[n - level]);
-		// std::cout << "val:" << val << std::endl;
+		int max = std::max(values.get(1), c[n - level]);
+		val = std::min(values.get(0), max);
 	}
 };
 
@@ -216,7 +239,38 @@ int main(int argc, char **argv)
 	FamilyofSets F = readSets(argc, argv);
 	SetZDD sets(F);
 	tdzdd::DdStructure<2> dd(sets);
+	int s = F.numSets();
+	int e = F.numElements();
+	int c[s];
 
-	F.print();
-	std::cout << "解の個数 : " << dd.zddCardinality() << std::endl;
+	for (int i = 1; i <= s; i++)
+		c[i - 1] = F.getWeight(i);
+
+	// F.print();
+	// 1: 解の個数を出力
+	std::cout << "解の個数: " << dd.zddCardinality() << std::endl;
+	std::cout << std::endl;
+
+	// 2: 全ての集合分割を出力
+	int i = 1;
+	std::cout << "解の列挙: " << std::endl;
+	for (auto it = dd.begin(); it != dd.end(); ++it)
+	{
+		/* 実行可能解を１行ずつ出力 */
+		std::cout << i << ": ";
+		for (auto itr = (*it).begin(); itr != (*it).end(); ++itr)
+		{
+			std::cout << s - *itr + 1 << " ";
+		}
+		i++;
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+
+	// 3: 重みの総和が最小の集合分割の重みの総和を出力
+	std::cout << "重みの総和が最小の集合分割の重みの総和: " << dd.evaluate(MinElement(s, c)) << std::endl;
+	std::cout << std::endl;
+
+	// 4: 最大重みが最小の集合分割の最大重みの出力
+	std::cout << "最大重みが最小の集合分割の最大重み: " << dd.evaluate(MaxElement(s, c)) << std::endl;
 }
